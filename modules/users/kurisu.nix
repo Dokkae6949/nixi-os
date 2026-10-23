@@ -9,7 +9,7 @@
     users.users.kurisu = {
       uid = 1000;
       isNormalUser = true;
-      extraGroups = [ "wheel" ];
+      extraGroups = [ "wheel" "video" ];
       hashedPasswordFile = config.sops.secrets."users/kurisu/password_hash".path;
       shell = pkgs.fish;
     };

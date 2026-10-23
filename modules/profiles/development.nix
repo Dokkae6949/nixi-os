@@ -10,5 +10,6 @@
     direnv
     helix
     secrets
+    claude
   ];
 }
