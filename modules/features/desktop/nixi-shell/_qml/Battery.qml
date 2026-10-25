@@ -24,6 +24,9 @@ Singleton {
 
     readonly property int lowPercent: 15
     readonly property int criticalPercent: 5
+    readonly property bool low: onBattery && percent <= lowPercent
+    readonly property string icon: charging ? "\u{F0084}" : !onBattery ? "\u{F06A5}" : percent <= criticalPercent ? "\u{F0083}" : percent >= 95 ? "\u{F0079}" : String.fromCodePoint(0xF007A + Math.max(0, Math.floor(percent / 10) - 1))
+    readonly property color tint: low ? Theme.red : onBattery && percent <= 25 ? Theme.yellow : Theme.green
     // Lowest threshold already announced during this discharge.
     property int warnedAt: 101
 

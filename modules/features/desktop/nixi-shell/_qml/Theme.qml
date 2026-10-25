@@ -5,6 +5,7 @@ import Quickshell
 // Mirrors the Niri layout theme (niri/settings.nix): Gruvbox dark, square
 // corners, 2px borders with the pink active-border accent, 5px gaps.
 Singleton {
+    readonly property color bgHard: "#1d2021"
     readonly property color bg: "#282828"
     readonly property color bg1: "#3c3836"
     readonly property color bg2: "#504945"

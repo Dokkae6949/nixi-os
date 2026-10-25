@@ -10,6 +10,10 @@ Singleton {
     property bool locked: false
     property string message: ""
     property bool failed: false
+    // Set by LockScreen once the compositor confirms every output is covered.
+    property bool secure: false
+    // Bumped on every rejected password, so the lock screen can react.
+    property int failures: 0
     readonly property bool waiting: pam.responseRequired
     readonly property string user: Quickshell.env("USER") || "user"
 
@@ -51,6 +55,7 @@ Singleton {
                 root.message = "";
             } else {
                 root.failed = true;
+                root.failures++;
                 root.message = result === PamResult.MaxTries ? "Too many attempts" : "Wrong password";
                 restart.start();
             }

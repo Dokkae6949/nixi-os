@@ -24,8 +24,8 @@ PanelWindow {
             return { icon: "\u{F00DF}", tint: Theme.yellow, title: "Brightness", value: Math.round(Sys.brightness * 100) + "%", level: Sys.brightness };
         case "volume":
             return Audio.muted
-                ? { icon: "\u{F0581}", tint: Theme.muted, title: "Volume", value: "Muted", level: Audio.volume }
-                : { icon: Audio.volume >= 0.66 ? "\u{F057E}" : Audio.volume >= 0.33 ? "\u{F0580}" : "\u{F057F}", tint: Theme.orange, title: "Volume", value: Math.round(Audio.volume * 100) + "%", level: Audio.volume };
+                ? { icon: Audio.icon, tint: Theme.muted, title: "Volume", value: "Muted", level: Audio.volume }
+                : { icon: Audio.icon, tint: Theme.orange, title: "Volume", value: Math.round(Audio.volume * 100) + "%", level: Audio.volume };
         case "mic":
             return Audio.micMuted
                 ? { icon: "\u{F036D}", tint: Theme.red, title: "Microphone", value: "Muted", level: -1 }

@@ -27,6 +27,11 @@ Singleton {
         return null;
     }
     readonly property string linkName: link?.name ?? ""
+    readonly property string label: link?.name ?? (wifiEnabled ? "offline" : "")
+    readonly property string icon: !wifiEnabled && link === null ? "\u{F05AA}"
+        : link === null ? "\u{F092E}"
+        : link.wired ? "\u{F0200}"
+        : link.strength >= 75 ? "\u{F0928}" : link.strength >= 50 ? "\u{F0925}" : link.strength >= 25 ? "\u{F0922}" : "\u{F091F}"
 
     readonly property BluetoothAdapter adapter: Bluetooth.defaultAdapter
     readonly property bool btEnabled: adapter?.enabled ?? false

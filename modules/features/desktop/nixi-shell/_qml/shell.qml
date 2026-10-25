@@ -8,6 +8,7 @@ ShellRoot {
     Osd {}
     LockScreen {}
     Polkit {}
+    Idle {}
 
     LazyLoader {
         active: Ui.panel === "apps" || Ui.panel === "clipboard"

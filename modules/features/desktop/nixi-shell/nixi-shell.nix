@@ -10,6 +10,9 @@
 #   nix develop .#nixi-shell -c qs -p modules/features/desktop/nixi-shell/_qml/shell.qml
 {
   flake.modules.homeManager.nixi-shell = { pkgs, ... }: {
+    # gdbus: Idle.qml watches logind for sleep and lock requests.
+    home.packages = [ pkgs.glib.bin ];
+
     programs.quickshell = {
       enable = true;
       package = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default;

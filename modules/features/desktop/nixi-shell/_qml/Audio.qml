@@ -15,6 +15,7 @@ Singleton {
     readonly property real volume: sink?.audio?.volume ?? 0
     readonly property bool muted: sink?.audio?.muted ?? false
     readonly property bool micMuted: source?.audio?.muted ?? false
+    readonly property string icon: muted ? "\u{F0581}" : volume >= 0.66 ? "\u{F057E}" : volume >= 0.33 ? "\u{F0580}" : "\u{F057F}"
 
     function stepVolume(percent: int): void {
         if (!hasSink)

@@ -215,15 +215,11 @@ PanelWindow {
             // Network: Wi-Fi/Ethernet and Bluetooth.
             Pill {
                 Mod {
-                    readonly property var link: Radio.link
-                    icon: !Radio.wifiEnabled && link === null ? "\u{F05AA}"
-                        : link === null ? "\u{F092E}"
-                        : link.wired ? "\u{F0200}"
-                        : link.strength >= 75 ? "\u{F0928}" : link.strength >= 50 ? "\u{F0925}" : link.strength >= 25 ? "\u{F0922}" : "\u{F091F}"
-                    label: link?.name ?? (Radio.wifiEnabled ? "offline" : "")
+                    icon: Radio.icon
+                    label: Radio.label
                     maxLabelWidth: 140
-                    tint: link === null ? Theme.muted : Theme.blue
-                    labelColor: link === null ? Theme.muted : Theme.fg
+                    tint: Radio.link === null ? Theme.muted : Theme.blue
+                    labelColor: Radio.link === null ? Theme.muted : Theme.fg
                     onClicked: button => {
                         if (button === Qt.RightButton)
                             Radio.toggleWifi();
@@ -273,12 +269,11 @@ PanelWindow {
                 visible: Battery.present
                 Mod {
                     visible: Battery.present
-                    readonly property int p: Battery.percent
                     readonly property string eta: Battery.duration(Battery.seconds)
-                    icon: Battery.charging ? "\u{F0084}" : !Battery.onBattery ? "\u{F06A5}" : p <= Battery.criticalPercent ? "\u{F0083}" : p >= 95 ? "\u{F0079}" : String.fromCodePoint(0xF007A + Math.max(0, Math.floor(p / 10) - 1))
-                    label: p + "%" + (eta ? " · " + eta : "")
-                    tint: p <= Battery.lowPercent && Battery.onBattery ? Theme.red : p <= 25 && Battery.onBattery ? Theme.yellow : Theme.green
-                    labelColor: p <= Battery.lowPercent && Battery.onBattery ? Theme.red : Theme.fg
+                    icon: Battery.icon
+                    label: Battery.percent + "%" + (eta ? " · " + eta : "")
+                    tint: Battery.tint
+                    labelColor: Battery.low ? Theme.red : Theme.fg
                     onClicked: Battery.report()
                 }
             }
