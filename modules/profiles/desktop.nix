@@ -2,21 +2,17 @@
 
 {
   flake.modules.nixos.desktop.imports = with config.flake.modules.nixos; [
-    gnome-keyring
     keyboard
     niri
-    unfree
   ];
 
   flake.modules.homeManager.desktop.imports = with config.flake.modules.homeManager; [
-    discord
-    matrix
-    email
-    firefox
+    browsers
+    communication
     fonts
-    helium
     niri
     quickshell
     spotify
+    terminal
   ];
 }

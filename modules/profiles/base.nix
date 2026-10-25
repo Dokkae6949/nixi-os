@@ -6,12 +6,12 @@
     network
     nix
     secrets
+    security
     shell
-    sudo
   ];
 
   flake.modules.homeManager.base.imports = with config.flake.modules.homeManager; [
-    cliTools
+    git
     shell
   ];
 }

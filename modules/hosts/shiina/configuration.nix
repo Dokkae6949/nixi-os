@@ -4,14 +4,12 @@
   systems = [ "x86_64-linux" ];
 
   flake.nixosConfigurations.shiina = inputs.nixpkgs.lib.nixosSystem {
-    system = "x86_64-linux";
-
     modules = with config.flake.modules.nixos; [
       base
       laptop
       desktop
       development
-      impermanent
+      impermanence
       tailscale
       kurisu
       shiina
@@ -21,11 +19,14 @@
         home-manager = {
           useGlobalPkgs = true;
           useUserPackages = true;
+          # Move pre-existing unmanaged dotfiles aside instead of failing.
+          backupFileExtension = "hm-backup";
           users.kurisu.imports = with config.flake.modules.homeManager; [
             base
             desktop
             development
             kurisu
+            shiina
           ];
         };
       }

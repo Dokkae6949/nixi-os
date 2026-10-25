@@ -1,10 +1,9 @@
 { inputs, ... }:
 
 {
-  flake.modules.nixos.shiina = { lib, pkgs, ... }: {
+  flake.modules.nixos.shiina = { pkgs, ... }: {
     imports = [ inputs.disko.nixosModules.disko ];
 
-    boot.initrd.systemd.enable = true;
     boot.initrd.systemd.services.rollback-root = {
       description = "Rotate and recreate the ephemeral Btrfs root subvolume";
       requiredBy = [ "sysroot.mount" ];
@@ -20,7 +19,13 @@
         findutils
         util-linux
       ];
-      serviceConfig.Type = "oneshot";
+      serviceConfig = {
+        Type = "oneshot";
+        # Without this the unit goes inactive after running, and the initrd's
+        # daemon-reload (systemd-sysroot-fstab-check) re-queues it through
+        # sysroot.mount: it would then rotate the root that was just mounted.
+        RemainAfterExit = true;
+      };
 
       script = ''
         set -euo pipefail
@@ -130,7 +135,5 @@
         };
       };
     };
-
-    fileSystems."/.persist".neededForBoot = lib.mkDefault true;
   };
 }

@@ -33,9 +33,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    niri.url = "github:sodiboo/niri-flake";
-    
-    spicetify-nix.url = "github:Gerg-L/spicetify-nix";
+    spicetify-nix = {
+      url = "github:Gerg-L/spicetify-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     helium = {
       url = "github:schembriaiden/helium-browser-nix-flake";
@@ -46,8 +47,5 @@
       url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # Temporary Fastmail 1.5.1 package
-    fastmail-nixpkgs.url = "github:NixOS/nixpkgs/ca430185a491cb43c75277ff80b286a577c9133a";
   };
 }

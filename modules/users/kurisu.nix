@@ -22,25 +22,9 @@
       stateVersion = "25.11";
     };
 
-    programs = {
-      git = {
-        enable = true;
-        settings = {
-          user.email = "finnliry@gmail.com";
-          user.name = "Dokkae6949";
-
-          merge.conflictStyle = "zdiff3";
-          push.autoSetupRemote = true;
-        };
-      };
-
-      difftastic = {
-        enable = true;
-
-        git = {
-          enable = true;
-        };
-      };
+    programs.git.settings.user = {
+      email = "finnliry@gmail.com";
+      name = "Dokkae6949";
     };
   };
 }

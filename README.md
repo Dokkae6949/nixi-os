@@ -32,6 +32,15 @@ entry point per machine without mixing reusable features into it.
 ```text
 modules/
 ├── features/          # Reusable behavior, one capability per file
+│   ├── core/          # Every machine: nix, shell, git, network, secrets, ...
+│   │   └── shell/     # fish, bat, eza, zellij, btop, starship prompt
+│   ├── desktop/       # keyboard, fonts, terminal (alacritty)
+│   │   ├── niri/      # session.nix, settings.nix, binds.nix
+│   │   └── quickshell/
+│   │       └── _nixi/ # Nixi shell QML source (`_` = ignored by import-tree)
+│   ├── apps/          # Browsers, communication, Spotify
+│   ├── laptop/        # Power management, Bluetooth
+│   └── development/   # Editor, direnv, Podman, nix-ld, Claude
 ├── profiles/          # Import-only bundles of features
 ├── users/             # Account and personal identity
 ├── hosts/
@@ -39,9 +48,11 @@ modules/
 │       ├── configuration.nix  # Composition root and flake output
 │       ├── boot.nix
 │       ├── hardware.nix
+│       ├── home.nix           # Host-specific Home Manager (monitor layout)
 │       ├── power.nix
 │       ├── storage.nix
-│       └── system.nix
+│       ├── system.nix
+│       └── vm.nix             # `nix run .#shiina-vm`
 ```
 
 ## Ownership rules
@@ -80,11 +91,23 @@ example, Niri has both NixOS and Home Manager behavior in the same file:
 }
 ```
 
-Features do not import profiles and do not decide which hosts use them.
+Features do not import profiles and do not decide which hosts use them. The
+subdirectories under `features/` are only for navigation; module names are
+flat (`flake.modules.nixos.network`, not `core.network`).
+
+One feature can span several files: every file that assigns
+`flake.modules.homeManager.niri` contributes to the same module, and the
+module system merges them. Use this to split a large feature (Niri's session,
+settings, and binds) without inventing new names.
+
+Dotfiles are declared with Home Manager options rather than copied files,
+so `~/.config` is generated. Edit the Nix, rebuild, and HM replaces the
+files. Assets that have no Nix representation (the Nixi QML tree, the
+`loadenv` fish function body) live next to the feature that uses them.
 
 ### Add a feature
 
-1. Create `modules/features/<feature>.nix`.
+1. Create `modules/features/<area>/<feature>.nix`.
 2. Define `flake.modules.nixos.<feature>`,
    `flake.modules.homeManager.<feature>`, or both.
 3. Add the feature to an appropriate profile, or select it directly in one
@@ -116,9 +139,8 @@ Profiles are import-only compositions. They contain no program settings:
 {
   flake.modules.nixos.development.imports =
     with config.flake.modules.nixos; [
-      docker
       nix-ld
-      postgresql
+      podman
     ];
 
   flake.modules.homeManager.development.imports =
@@ -196,8 +218,8 @@ users.kurisu.imports = with config.flake.modules.homeManager; [
 
 ### Add a host-local user permission
 
-Put it in `modules/hosts/<host>/system.nix`. Group membership such as Docker
-access is authorization on that machine, not reusable user identity.
+Put it in `modules/hosts/<host>/system.nix`. Extra group membership on one
+machine is authorization on that machine, not reusable user identity.
 
 ## Hosts
 
@@ -233,16 +255,28 @@ root. Files may be split by hardware concern when they are substantial.
 
 ## Impermanence
 
-Impermanence is opt-in. The `impermanent` profile imports:
+Impermanence is opt-in: a host selects the `impermanence` feature, which
+imports the upstream module and persists the system basics (`/etc/nixos`,
+`/var/lib/nixos`, systemd timer stamps, and `/etc/machine-id`).
 
-- the base persistence feature, which imports the upstream impermanence module;
-- NetworkManager's persistence integration;
-- sops' persistent key integration;
-- Tailscale's node identity, ready for hosts that select the Tailscale feature.
+Every other feature declares its own persistent state next to its normal
+configuration, guarded so it applies only when impermanence is selected:
 
-Those integration modules are deferred. A host that does not select the
-`impermanent` profile does not evaluate `environment.persistence` and does not
-need the upstream impermanence module.
+```nix
+flake.modules.nixos.tailscale = { lib, options, ... }: {
+  config = lib.mkMerge [
+    { services.tailscale.enable = true; }
+
+    (lib.optionalAttrs (options ? environment.persistence) {
+      environment.persistence."/.persist".directories = [ "/var/lib/tailscale" ];
+    })
+  ];
+};
+```
+
+So selecting a feature persists what it needs, and a host without
+impermanence never evaluates `environment.persistence`. Use this pattern when
+adding a stateful feature instead of keeping a central list of directories.
 
 ## Tailscale
 
@@ -263,8 +297,8 @@ For an interactive enrollment, deploy the configuration and run this once:
 sudo tailscale up
 ```
 
-The node identity in `/var/lib/tailscale` survives reboots. The `impermanent`
-profile persists that directory automatically.
+The node identity in `/var/lib/tailscale` survives reboots. The Tailscale
+feature persists that directory itself whenever impermanence is selected.
 
 For unattended enrollment, generate a one-off auth key for each persistent
 host and store it in that host's SOPS file. For example, add this value to

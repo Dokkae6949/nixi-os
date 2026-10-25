@@ -18,10 +18,6 @@
       }
     ];
 
-    # Local authorization policy: Kurisu operates Docker on this host.
-    users.groups.docker.members = [ "kurisu" ];
-    virtualisation.docker.storageDriver = "btrfs";
-
     system.stateVersion = "25.11";
   };
 }

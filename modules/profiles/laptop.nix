@@ -2,7 +2,7 @@
 
 {
   flake.modules.nixos.laptop.imports = with config.flake.modules.nixos; [
-    battery
     bluetooth
+    power
   ];
 }

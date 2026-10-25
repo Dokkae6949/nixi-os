@@ -7,9 +7,9 @@
   ];
 
   flake.modules.homeManager.development.imports = with config.flake.modules.homeManager; [
+    claude
     direnv
     helix
     secrets
-    claude
   ];
 }
