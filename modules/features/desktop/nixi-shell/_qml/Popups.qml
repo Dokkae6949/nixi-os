@@ -9,6 +9,34 @@ PanelWindow {
 
     readonly property bool center: Ui.panel === "notifications"
 
+    // Each opening starts on the newest entry.
+    onCenterChanged: {
+        if (center) {
+            Notifs.selected = 0;
+            flick.contentY = 0;
+        }
+    }
+
+    // Scroll just enough to keep the selected history row in view.
+    function reveal(): void {
+        const item = cards.itemAt(Notifs.selected);
+        if (!root.center || !item)
+            return;
+        if (Notifs.selected === 0)
+            flick.contentY = 0;
+        else if (item.y < flick.contentY)
+            flick.contentY = item.y;
+        else if (item.y + item.height > flick.contentY + flick.height)
+            flick.contentY = item.y + item.height - flick.height;
+    }
+
+    Connections {
+        target: Notifs
+        function onSelectedChanged(): void {
+            root.reveal();
+        }
+    }
+
     visible: center || Notifs.popups.count > 0
     anchors {
         top: true
@@ -24,10 +52,11 @@ PanelWindow {
     exclusionMode: ExclusionMode.Normal
     WlrLayershell.namespace: "nixi-shell-notifications"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: center ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: center ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
     component Card: Rectangle {
         id: card
+        required property int index
         required property int key
         required property string app
         required property string summary
@@ -37,12 +66,13 @@ PanelWindow {
         required property bool critical
         required property int timeout
         readonly property bool hovered: hover.hovered
+        readonly property bool selected: root.center && index === Notifs.selected
 
         width: column.width
         implicitHeight: content.implicitHeight + 20
-        color: Theme.bg
+        color: selected ? Theme.bg1 : Theme.bg
         border.width: Theme.borderWidth
-        border.color: critical ? Theme.red : hovered ? Theme.accent : Theme.border
+        border.color: critical ? Theme.red : hovered || selected ? Theme.accent : Theme.border
 
         HoverHandler {
             id: hover
@@ -118,6 +148,7 @@ PanelWindow {
     }
 
     Flickable {
+        id: flick
         anchors.fill: parent
         contentHeight: column.implicitHeight
         interactive: root.center && contentHeight > height
@@ -137,7 +168,31 @@ PanelWindow {
                 border.width: Theme.borderWidth
                 border.color: Theme.accent
                 focus: root.center
-                Keys.onEscapePressed: Ui.panel = ""
+                // Same keys as the launcher list.
+                Keys.onPressed: event => {
+                    const ctrl = event.modifiers & Qt.ControlModifier;
+                    const shift = event.modifiers & Qt.ShiftModifier;
+                    if (event.key === Qt.Key_Escape) {
+                        Ui.panel = "";
+                    } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Tab || event.key === Qt.Key_J || (ctrl && event.key === Qt.Key_N)) {
+                        Notifs.select(1);
+                    } else if (event.key === Qt.Key_Up || event.key === Qt.Key_Backtab || event.key === Qt.Key_K || (ctrl && event.key === Qt.Key_P)) {
+                        Notifs.select(-1);
+                    } else if (event.key === Qt.Key_Home) {
+                        Notifs.selected = 0;
+                    } else if (event.key === Qt.Key_End) {
+                        Notifs.selected = Math.max(0, Notifs.count - 1);
+                    } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                        Notifs.activateSelected();
+                    } else if ((event.key === Qt.Key_Delete || event.key === Qt.Key_Backspace) && shift) {
+                        Notifs.clearAll();
+                    } else if (event.key === Qt.Key_Delete || event.key === Qt.Key_Backspace) {
+                        Notifs.dismissSelected();
+                    } else {
+                        return;
+                    }
+                    event.accepted = true;
+                }
 
                 Text {
                     anchors.left: parent.left
@@ -178,6 +233,7 @@ PanelWindow {
             }
 
             Repeater {
+                id: cards
                 model: root.center ? Notifs.history : Notifs.popups
                 Card {}
             }

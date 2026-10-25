@@ -39,7 +39,10 @@
     home.pointerCursor = {
       enable = true;
       gtk.enable = true;
-      x11.enable = true;
+      # XCURSOR_THEME/XCURSOR_PATH cover X11 apps under xwayland-satellite;
+      # nothing loads ~/.Xresources, and the theme is also linked into
+      # ~/.local/share/icons, so ~/.icons is redundant.
+      dotIcons.enable = false;
       package = pkgs.bibata-cursors;
       name = "Bibata-Modern-Classic";
       size = 24;

@@ -57,6 +57,7 @@
         "Mod+D" = nixi [ "launcher" ];
         "Alt+V" = nixi [ "clipboard" ];
         "Mod+N" = nixi [ "notifications" ];
+        "Mod+Shift+N" = nixiWith { hotkey-overlay-title = "Dismiss Notification"; } [ "dismiss" ];
         "Mod+B" = nixi [ "battery" ];
         "Mod+X" = nixi [ "close" ];
         "Ctrl+Alt+Backspace" = nixi [ "lock" ];

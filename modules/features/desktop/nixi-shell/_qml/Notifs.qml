@@ -15,9 +15,13 @@ Singleton {
     readonly property int maxHistory: 50
     readonly property int maxPopups: 4
     property int nextKey: 0
+    // History row the keyboard acts on while the panel is open.
+    property int selected: 0
 
     property ListModel history: ListModel {}
     property ListModel popups: ListModel {}
+
+    onCountChanged: selected = Math.max(0, Math.min(selected, count - 1))
 
     // Shell-internal notification. `tag` lets the poster replace or withdraw
     // its previous one.
@@ -109,6 +113,26 @@ Singleton {
 
     function clearPopups(): void {
         popups.clear();
+    }
+
+    // Like a timeout: off the screen, still in history.
+    function hideNewestPopup(): void {
+        if (popups.count > 0)
+            popups.remove(0);
+    }
+
+    function select(step: int): void {
+        selected = Math.max(0, Math.min(selected + step, count - 1));
+    }
+
+    function dismissSelected(): void {
+        if (selected < count)
+            dismissAt(selected);
+    }
+
+    function activateSelected(): void {
+        if (selected < count)
+            activate(history.get(selected).key);
     }
 
     function clearAll(): void {

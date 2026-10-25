@@ -16,5 +16,6 @@
     git
     nix
     shell
+    xdg-home
   ];
 }

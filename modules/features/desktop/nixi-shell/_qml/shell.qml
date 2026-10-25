@@ -28,6 +28,14 @@ ShellRoot {
         function notifications(): void {
             Ui.toggle("notifications");
         }
+        // Panel open: dismiss the selected entry. Otherwise hide the newest
+        // popup, which stays in history.
+        function dismiss(): void {
+            if (Ui.panel === "notifications")
+                Notifs.dismissSelected();
+            else
+                Notifs.hideNewestPopup();
+        }
         function close(): void {
             Ui.close();
         }

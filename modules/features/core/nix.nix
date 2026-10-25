@@ -9,7 +9,18 @@
         experimental-features = [ "nix-command" "flakes" ];
         flake-registry = "";
         trusted-users = [ "root" "@wheel" ];
+        # Profiles and channels under ~/.local/state instead of ~/.nix-*.
+        use-xdg-base-directories = true;
         nix-path = lib.mapAttrsToList (name: _: "${name}=flake:${name}") flakeInputs;
+      };
+
+      # Weekly, catching up after the machine was off; keeps two weeks of
+      # generations to roll back to.
+      gc = {
+        automatic = true;
+        dates = "weekly";
+        persistent = true;
+        options = "--delete-older-than 14d";
       };
 
       channel.enable = false;
