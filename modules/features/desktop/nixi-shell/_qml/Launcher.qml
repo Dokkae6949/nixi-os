@@ -44,9 +44,25 @@ PanelWindow {
             glyph: "",
             key: a.name.toLowerCase(),
             hay: [a.genericName, a.comment, a.execString, a.id].concat(a.keywords).join(" ").toLowerCase(),
-            run: () => a.execute()
+            run: () => launch(a)
         }))
         .sort((x, y) => x.key.localeCompare(y.key))
+
+    // Run each app in its own scope rather than as a child of
+    // quickshell.service, which would take it down whenever the shell
+    // restarts. The ordering stops apps (SIGTERM, so they save their state)
+    // before niri when the session ends, instead of losing the display first.
+    function launch(entry: DesktopEntry): void {
+        const unit = "app-nixi-" + entry.id.replace(/[^A-Za-z0-9:_.-]/g, "_") + "-" + Date.now();
+        Quickshell.execDetached({
+            command: ["systemd-run", "--user", "--scope", "--quiet", "--collect",
+                "--slice=app.slice", "--unit=" + unit,
+                "--property=After=graphical-session.target",
+                "--property=PartOf=graphical-session.target",
+                "--"].concat(Array.from(entry.command)),
+            workingDirectory: entry.workingDirectory
+        });
+    }
 
     function command(name: string, glyph: string, run: var): var {
         return { name: name, sub: "Command", icon: "", glyph: glyph, key: name.toLowerCase(), hay: "", run: run };
@@ -55,7 +71,8 @@ PanelWindow {
     readonly property var commands: [
         command("Lock", "\u{F033E}", () => Session.lock()),
         command("Suspend", "\u{F04B2}", () => Session.run(["systemctl", "suspend"])),
-        command("Log out", "\u{F0343}", () => Session.run(["niri", "msg", "action", "quit", "--skip-confirmation"])),
+        // Ends the session the way niri-session does, so apps close before niri.
+        command("Log out","\u{F0343}", () => Session.run(["systemctl", "--user", "start", "--job-mode=replace-irreversibly", "niri-shutdown.target"])),
         command("Reboot", "\u{F0709}", () => Session.run(["systemctl", "reboot"])),
         command("Shut down", "\u{F0425}", () => Session.run(["systemctl", "poweroff"])),
         command("Do not disturb", "\u{F009B}", () => Notifs.toggleDnd()),

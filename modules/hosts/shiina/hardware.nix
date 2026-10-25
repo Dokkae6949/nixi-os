@@ -1,5 +1,5 @@
 {
-  flake.modules.nixos.shiina = { config, lib, modulesPath, ... }: {
+  flake.modules.nixos.shiina = { config, lib, pkgs, modulesPath, ... }: {
     imports = [
       (modulesPath + "/installer/scan/not-detected.nix")
     ];
@@ -12,6 +12,11 @@
     nixpkgs.hostPlatform = "x86_64-linux";
     networking.useDHCP = lib.mkDefault true;
     networking.hostName = "shiina";
+
+    # VA-API driver for the UHD 620 (Kaby Lake); without it browsers decode
+    # all video on the CPU.
+    hardware.graphics.extraPackages = [ pkgs.intel-media-driver ];
+    environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";
 
     services.fwupd.enable = true;
     hardware.cpu.intel.updateMicrocode =
