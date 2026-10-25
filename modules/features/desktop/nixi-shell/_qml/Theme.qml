@@ -26,4 +26,12 @@ Singleton {
     readonly property int barHeight: 28
     readonly property int borderWidth: 2
     readonly property int gap: 5
+
+    // The niri window shadow (softness 30, spread 5, offset y 6, #00000088).
+    readonly property color shadowColor: "#88000000"
+    readonly property int shadowBlur: 30
+    readonly property int shadowSpread: 5
+    readonly property int shadowOffset: 6
+    // How far a shadow reaches past its box; surfaces leave this much room.
+    readonly property int shadowReach: shadowBlur + shadowSpread + shadowOffset
 }

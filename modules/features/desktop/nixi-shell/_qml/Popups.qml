@@ -17,17 +17,20 @@ PanelWindow {
         }
     }
 
-    // Scroll just enough to keep the selected history row in view.
+    // Scroll just enough to keep the selected history row in view. The bottom
+    // shadowReach of the surface is shadow room, not list.
     function reveal(): void {
         const item = cards.itemAt(Notifs.selected);
         if (!root.center || !item)
             return;
+        const top = column.y + item.y;
+        const view = flick.height - Theme.shadowReach;
         if (Notifs.selected === 0)
             flick.contentY = 0;
-        else if (item.y < flick.contentY)
-            flick.contentY = item.y;
-        else if (item.y + item.height > flick.contentY + flick.height)
-            flick.contentY = item.y + item.height - flick.height;
+        else if (top - Theme.gap < flick.contentY)
+            flick.contentY = top - Theme.gap;
+        else if (top + item.height > flick.contentY + view)
+            flick.contentY = top + item.height - view;
     }
 
     Connections {
@@ -38,17 +41,19 @@ PanelWindow {
     }
 
     visible: center || Notifs.popups.count > 0
+    // The cards sit Theme.gap from the top and right edges; the surface
+    // reaches further left and down so their shadows have room, and only the
+    // cards take input.
     anchors {
         top: true
         right: true
     }
-    margins {
-        top: Theme.gap
-        right: Theme.gap
-    }
-    implicitWidth: 400
-    implicitHeight: Math.min(column.implicitHeight, (screen?.height ?? 1080) - 80)
+    implicitWidth: 400 + Theme.gap + Theme.shadowReach
+    implicitHeight: Math.min(column.implicitHeight, (screen?.height ?? 1080) - 80) + Theme.gap + Theme.shadowReach
     color: "transparent"
+    mask: Region {
+        item: hitArea
+    }
     exclusionMode: ExclusionMode.Normal
     WlrLayershell.namespace: "nixi-shell-notifications"
     WlrLayershell.layer: WlrLayer.Overlay
@@ -73,6 +78,15 @@ PanelWindow {
         color: selected ? Theme.bg1 : Theme.bg
         border.width: Theme.borderWidth
         border.color: critical ? Theme.red : hovered || selected ? Theme.accent : Theme.border
+
+        // Drawn in the layer under all cards, so it never darkens a neighbour.
+        Shadow {
+            parent: shadows
+            x: card.x
+            y: card.y
+            width: card.width
+            height: card.height
+        }
 
         HoverHandler {
             id: hover
@@ -147,20 +161,38 @@ PanelWindow {
         }
     }
 
+    // Where the cards are on screen: the input region.
+    Item {
+        id: hitArea
+        x: column.x
+        y: column.y
+        width: column.width
+        height: Math.min(column.implicitHeight, root.height - Theme.gap - Theme.shadowReach)
+    }
+
     Flickable {
         id: flick
         anchors.fill: parent
-        contentHeight: column.implicitHeight
+        contentHeight: column.implicitHeight + Theme.gap + Theme.shadowReach
         interactive: root.center && contentHeight > height
         clip: true
 
+        Item {
+            id: shadows
+            x: column.x
+            y: column.y
+        }
+
         Column {
             id: column
-            width: root.width
+            x: Theme.shadowReach
+            y: Theme.gap
+            width: 400
             spacing: Theme.gap
 
             // History header.
             Rectangle {
+                id: header
                 visible: root.center
                 width: parent.width
                 height: 32
@@ -168,6 +200,16 @@ PanelWindow {
                 border.width: Theme.borderWidth
                 border.color: Theme.accent
                 focus: root.center
+
+                Shadow {
+                    parent: shadows
+                    visible: header.visible
+                    x: header.x
+                    y: header.y
+                    width: header.width
+                    height: header.height
+                }
+
                 // Same keys as the launcher list.
                 Keys.onPressed: event => {
                     const ctrl = event.modifiers & Qt.ControlModifier;

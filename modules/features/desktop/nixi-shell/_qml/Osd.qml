@@ -55,10 +55,11 @@ PanelWindow {
         hide.restart();
     }
 
+    // The box is 320x60, 96px above the bottom; the rest is shadow room.
     anchors.bottom: true
-    margins.bottom: 96
-    implicitWidth: 320
-    implicitHeight: 60
+    margins.bottom: 96 - Theme.shadowReach
+    implicitWidth: 320 + Theme.shadowReach * 2
+    implicitHeight: 60 + Theme.shadowReach * 2
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
     mask: Region {}
@@ -93,6 +94,7 @@ PanelWindow {
 
     Rectangle {
         anchors.fill: parent
+        anchors.margins: Theme.shadowReach
         // The surface stays mapped (transparent, click-through); only the
         // content fades, so a quick re-trigger never recreates the window.
         opacity: root.shown ? 1 : 0
@@ -103,6 +105,12 @@ PanelWindow {
         color: Theme.bg
         border.width: Theme.borderWidth
         border.color: root.info?.tint ?? Theme.border
+
+        // Below the box, fading with it.
+        Shadow {
+            anchors.fill: parent
+            z: -1
+        }
 
         Text {
             id: glyph

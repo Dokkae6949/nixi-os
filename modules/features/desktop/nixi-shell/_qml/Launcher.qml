@@ -159,6 +159,11 @@ PanelWindow {
         border.width: Theme.borderWidth
         border.color: Theme.accent
 
+        Shadow {
+            anchors.fill: parent
+            z: -1
+        }
+
         MouseArea {
             anchors.fill: parent
         }
