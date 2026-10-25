@@ -1,15 +1,17 @@
 {
   flake.modules.homeManager.niri = { lib, ... }:
     let
-      # Talk to the running Nixi shell over Quickshell IPC.
+      # Talk to the running Nixi Shell over Quickshell IPC.
       nixiWith = props: args: {
         _props = {
           allow-when-locked = false;
           repeat = false;
         } // props;
-        spawn = [ "qs" "-c" "nixi" "ipc" "call" "nixi" ] ++ args;
+        spawn = [ "qs" "-c" "nixi-shell" "ipc" "call" "nixi-shell" ] ++ args;
       };
       nixi = nixiWith { };
+      # Hardware keys: usable on the lock screen and auto-repeating.
+      shellKey = nixiWith { allow-when-locked = true; repeat = true; };
 
       whenLocked = action: { _props.allow-when-locked = true; } // action;
 
@@ -31,11 +33,16 @@
         "Ctrl+Alt+Delete".quit = { };
         "Mod+Shift+P".power-off-monitors = { };
 
-        # Media and hardware keys.
-        "XF86AudioRaiseVolume" = whenLocked { spawn-sh = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; };
-        "XF86AudioLowerVolume" = whenLocked { spawn-sh = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1-"; };
-        "XF86AudioMute" = whenLocked { spawn-sh = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; };
-        "XF86AudioMicMute" = whenLocked { spawn-sh = "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; };
+        # Media and hardware keys. Volume, microphone and brightness go
+        # through Nixi Shell (native PipeWire and sysfs) so its OSD follows.
+        "XF86AudioRaiseVolume" = shellKey [ "volumeUp" "5" ];
+        "XF86AudioLowerVolume" = shellKey [ "volumeDown" "5" ];
+        "XF86AudioMute" = nixiWith { allow-when-locked = true; } [ "volumeMute" ];
+        "XF86AudioMicMute" = nixiWith { allow-when-locked = true; } [ "micMute" ];
+        "XF86MonBrightnessUp" = shellKey [ "brightnessUp" "5" ];
+        "XF86MonBrightnessDown" = shellKey [ "brightnessDown" "5" ];
+        "Shift+XF86MonBrightnessUp" = shellKey [ "brightnessUp" "1" ];
+        "Shift+XF86MonBrightnessDown" = shellKey [ "brightnessDown" "1" ];
         "XF86AudioPlay" = whenLocked { spawn = [ "playerctl" "play-pause" ]; };
         "XF86AudioStop" = whenLocked { spawn = [ "playerctl" "stop" ]; };
         "XF86AudioPrev" = whenLocked { spawn = [ "playerctl" "previous" ]; };
@@ -43,21 +50,15 @@
         "Alt+Ctrl+Home" = whenLocked { spawn = [ "playerctl" "previous" ]; };
         "Alt+Ctrl+End" = whenLocked { spawn = [ "playerctl" "play-pause" ]; };
         "Alt+Ctrl+Insert" = whenLocked { spawn = [ "playerctl" "next" ]; };
-        "Shift+XF86MonBrightnessUp" = whenLocked { spawn = [ "brightnessctl" "--class=backlight" "set" "1%+" ]; };
-        "Shift+XF86MonBrightnessDown" = whenLocked { spawn = [ "brightnessctl" "--class=backlight" "set" "1%-" ]; };
 
-        # Nixi shell.
+        # Nixi Shell.
         "XF86Tools" = nixiWith { allow-when-locked = true; } [ "cyclePowerProfile" ];
-        "XF86Bluetooth" = nixiWith { allow-when-locked = true; } [ "reportBluetoothKey" ];
-        "XF86Favorites" = nixiWith { allow-when-locked = true; } [ "action" "notifications.dnd.toggle" "" ];
-        "Mod+N" = nixi [ "open" "notifications" ];
+        "XF86Favorites" = nixiWith { allow-when-locked = true; } [ "dnd" ];
+        "Mod+D" = nixi [ "launcher" ];
+        "Alt+V" = nixi [ "clipboard" ];
+        "Mod+N" = nixi [ "notifications" ];
+        "Mod+B" = nixi [ "battery" ];
         "Mod+X" = nixi [ "close" ];
-        "Mod+B" = nixi [ "open" "battery" ];
-        "Mod+S" = nixi [ "toggle" ];
-        "Mod+D" = nixi [ "open" "launcher" ];
-        "Mod+P" = nixi [ "open" "performance" ];
-        "Alt+V" = nixi [ "open" "clipboard" ];
-        "Mod+M" = nixi [ "open" "media" ];
         "Ctrl+Alt+Backspace" = nixi [ "lock" ];
         "Super+Alt+L" = nixiWith { hotkey-overlay-title = "Lock the Screen"; } [ "lock" ];
 

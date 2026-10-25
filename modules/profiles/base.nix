@@ -9,10 +9,12 @@
     secrets
     security
     shell
+    shutdown
   ];
 
   flake.modules.homeManager.base.imports = with config.flake.modules.homeManager; [
     git
+    nix
     shell
   ];
 }

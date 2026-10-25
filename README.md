@@ -36,8 +36,8 @@ modules/
 │   │   └── shell/     # fish, bat, eza, zellij, btop, starship prompt
 │   ├── desktop/       # keyboard, fonts, terminal (alacritty)
 │   │   ├── niri/      # session.nix, settings.nix, binds.nix
-│   │   └── quickshell/
-│   │       └── _nixi/ # Nixi shell QML source (`_` = ignored by import-tree)
+│   │   └── nixi-shell/
+│   │       └── _qml/  # Nixi Shell QML source (`_` = ignored by import-tree)
 │   ├── apps/          # Browsers, communication, Spotify
 │   ├── laptop/        # Power management, Bluetooth
 │   └── development/   # Editor, direnv, Podman, nix-ld, Claude

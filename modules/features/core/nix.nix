@@ -17,5 +17,18 @@
     };
 
     nixpkgs.config.allowUnfree = true;
+
+    # Needs a channel's programs.sqlite; nix-index (below) replaces it.
+    programs.command-not-found.enable = false;
+  };
+
+  # `, <program> [args]` runs any program from nixpkgs without installing it,
+  # and unknown commands suggest the package that provides them. Both use the
+  # prebuilt weekly nix-index database, so nothing is indexed locally.
+  flake.modules.homeManager.nix = {
+    imports = [ inputs.nix-index-database.homeModules.nix-index ];
+
+    programs.nix-index.enable = true;
+    programs.nix-index-database.comma.enable = true;
   };
 }

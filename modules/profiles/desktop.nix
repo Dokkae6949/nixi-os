@@ -11,7 +11,7 @@
     communication
     fonts
     niri
-    quickshell
+    nixi-shell
     spotify
     terminal
   ];
