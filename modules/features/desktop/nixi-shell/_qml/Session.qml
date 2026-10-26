@@ -14,7 +14,8 @@ Singleton {
     property bool secure: false
     // Bumped on every rejected password, so the lock screen can react.
     property int failures: 0
-    readonly property bool waiting: pam.responseRequired
+    // True from submitting a password until PAM answers, so input stays locked meanwhile.
+    property bool checking: false
     readonly property string user: Quickshell.env("USER") || "user"
 
     function lock(): void {
@@ -24,6 +25,7 @@ Singleton {
         Notifs.clearPopups();
         message = "";
         failed = false;
+        checking = false;
         locked = true;
         pam.start();
     }
@@ -31,6 +33,7 @@ Singleton {
     function submit(password: string): void {
         if (pam.responseRequired) {
             message = "";
+            checking = true;
             pam.respond(password);
         }
     }
@@ -48,7 +51,9 @@ Singleton {
             if (!responseRequired && message.length > 0)
                 root.message = message;
         }
+        onResponseRequiredChanged: if (responseRequired) root.checking = false
         onCompleted: result => {
+            root.checking = false;
             if (result === PamResult.Success) {
                 root.locked = false;
                 root.failed = false;
@@ -61,6 +66,7 @@ Singleton {
             }
         }
         onError: {
+            root.checking = false;
             root.failed = true;
             root.message = "PAM error";
             restart.start();

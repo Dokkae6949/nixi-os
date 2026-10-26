@@ -31,7 +31,7 @@ WlSessionLock {
                 AuthField {
                     id: password
                     placeholder: "Password for " + Session.user
-                    busy: !Session.waiting
+                    busy: Session.checking
                     failed: Session.failed
                     onSubmitted: text => {
                         Session.submit(text);
