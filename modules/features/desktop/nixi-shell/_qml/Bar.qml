@@ -224,7 +224,7 @@ PanelWindow {
                         if (button === Qt.RightButton)
                             Radio.toggleWifi();
                         else
-                            Session.run(["alacritty", "-e", "nmtui"]);
+                            Session.run(["alacritty", "-e", "impala"]);
                     }
                 }
                 Mod {

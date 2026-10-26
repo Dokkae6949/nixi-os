@@ -18,6 +18,10 @@
 
         # Speeds up boot time.
         systemd.services.NetworkManager-wait-online.enable = false;
+
+        environment.systemPackages = with pkgs; [
+          impala
+        ];
       }
 
       (lib.optionalAttrs (options ? environment.persistence) {
