@@ -1,10 +1,15 @@
 {
-  flake.modules.nixos.podman.virtualisation.podman = {
-    enable = true;
+  flake.modules.nixos.podman = {pkgs, ...}: {
+    virtualisation.podman = {
+      enable = true;
+      dockerCompat = true;
 
-    # `docker` CLI and /var/run/docker.sock backed by Podman, so tools that
-    # expect Docker (compose, testcontainers, IDEs) keep working.
-    dockerCompat = true;
-    dockerSocket.enable = true;
+      # Required for containers under podman-compose to be able to talk to each other.
+      defaultNetwork.settings.dns_enabled = true;
+    };
+
+    environment.systemPackages = with pkgs; [
+      podman-compose
+    ];
   };
 }
